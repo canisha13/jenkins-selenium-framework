@@ -21,7 +21,7 @@ public class LoginTest extends BaseTest {
                 "Inventory page was not displayed after login."
         );
 
-        Assert.assertEquals(inventory.title(), "Products");
+        Assert.assertEquals(inventory.title(), "Product");
 
         Assert.assertTrue(
                 inventory.currentUrl().contains("inventory.html")
