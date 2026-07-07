@@ -1,32 +1,25 @@
 pipeline {
     agent any
 
+    triggers {
+        cron('H 1 * * 1-5')
+    }
+
     environment {
         SAUCE_USERNAME = credentials('saucedemo-username')
         SAUCE_PASSWORD = credentials('saucedemo-password')
     }
 
     parameters {
-        choice(
-            name: 'BROWSER',
-            choices: ['chrome', 'firefox'],
-            description: 'Browser to run'
-        )
-
-        choice(
-            name: 'TEST_GROUP',
-            choices: ['all', 'smoke', 'regression'],
-            description: 'TestNG group'
-        )
+        choice(name: 'BROWSER', choices: ['chrome', 'firefox'], description: 'Browser to run')
+        choice(name: 'TEST_GROUP', choices: ['all', 'smoke', 'regression'], description: 'TestNG group')
     }
 
     stages {
-
         stage('Start Selenium') {
             steps {
                 sh '''
                 docker rm -f selenium-browser || true
-
                 docker run -d \
                   --name selenium-browser \
                   --network jenkins-lab \
@@ -69,13 +62,8 @@ pipeline {
     post {
         always {
             sh 'docker logs selenium-browser > selenium-container.log || true'
-
-            junit allowEmptyResults: true,
-                  testResults: 'target/surefire-reports/TEST-*.xml'
-
-            archiveArtifacts allowEmptyArchive: true,
-                             artifacts: 'target/screenshots/**,target/surefire-reports/**,test-output/**,selenium-container.log'
-
+            junit allowEmptyResults: true, testResults: 'target/surefire-reports/TEST-*.xml'
+            archiveArtifacts allowEmptyArchive: true, artifacts: 'target/screenshots/**,target/surefire-reports/**,test-output/**,selenium-container.log'
             sh 'docker rm -f selenium-browser || true'
         }
     }
